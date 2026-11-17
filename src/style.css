@@ -1,0 +1,260 @@
+:root {
+  --bg: #0b0d10;
+  --fg: #e8ecf1;
+  --muted: #9aa4b2;
+  --panel: rgba(20, 24, 30, 0.62);
+  --panel-strong: rgba(30, 36, 44, 0.85);
+  --stroke: rgba(255, 255, 255, 0.18);
+  --accent: #5ab0ff;
+  --dial-size: clamp(132px, 34vmin, 200px);
+  --btn-size: clamp(56px, 14vmin, 80px);
+  --gutter: 16px;
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#viewport {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  outline: none;
+}
+
+/* ---------- toolbar ---------- */
+#toolbar {
+  position: fixed;
+  top: calc(var(--safe-t) + 10px);
+  left: calc(var(--safe-l) + 10px);
+  right: calc(var(--safe-r) + 10px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+  z-index: 10;
+}
+#toolbar > * {
+  pointer-events: auto;
+}
+.tb-btn,
+.tb-select,
+.tb-speed {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--stroke);
+  background: var(--panel);
+  color: var(--fg);
+  font: inherit;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.tb-btn {
+  cursor: pointer;
+}
+.tb-btn:hover {
+  background: var(--panel-strong);
+}
+.tb-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.tb-select {
+  max-width: 40vw;
+  padding: 0 8px;
+}
+.tb-speed {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.tb-speed span {
+  color: var(--muted);
+}
+.tb-speed input {
+  width: 90px;
+  accent-color: var(--accent);
+}
+
+/* ---------- status / hints ---------- */
+#status {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 220px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: var(--panel-strong);
+  border: 1px solid var(--stroke);
+  text-align: center;
+  z-index: 20;
+}
+#progress {
+  margin-top: 10px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+#progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width 0.1s linear;
+}
+#empty-hint {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--muted);
+  pointer-events: none;
+}
+#empty-hint small {
+  opacity: 0.7;
+}
+#drop-overlay {
+  position: fixed;
+  inset: 12px;
+  border: 2px dashed var(--accent);
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: rgba(11, 13, 16, 0.6);
+  font-size: 20px;
+  z-index: 30;
+  pointer-events: none;
+}
+[hidden] {
+  display: none !important;
+}
+
+/* ---------- on-screen controls ---------- */
+.ctrl {
+  position: fixed;
+  z-index: 10;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+#dial {
+  left: calc(var(--safe-l) + var(--gutter) + 8px);
+  bottom: calc(var(--safe-b) + var(--gutter) + 8px);
+  width: var(--dial-size);
+  height: var(--dial-size);
+  border-radius: 50%;
+}
+#dial-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid var(--stroke);
+  background: var(--panel);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+#dial.moving #dial-ring {
+  border-color: var(--accent);
+}
+.arrow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 8px solid var(--muted);
+  margin: -4px 0 0 -6px;
+}
+.arrow.n {
+  transform: rotate(0deg) translateY(calc(var(--dial-size) * -0.42));
+}
+.arrow.e {
+  transform: rotate(90deg) translateY(calc(var(--dial-size) * -0.42));
+}
+.arrow.s {
+  transform: rotate(180deg) translateY(calc(var(--dial-size) * -0.42));
+}
+.arrow.w {
+  transform: rotate(270deg) translateY(calc(var(--dial-size) * -0.42));
+}
+#dial-base {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--stroke);
+}
+#dial-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 30%;
+  height: 30%;
+  margin: -15% 0 0 -15%;
+  border-radius: 50%;
+  background: rgba(232, 236, 241, 0.85);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  will-change: transform;
+}
+#dial.moving #dial-knob {
+  background: var(--accent);
+}
+
+#elevator {
+  right: calc(var(--safe-r) + var(--gutter) + 8px);
+  bottom: calc(var(--safe-b) + var(--gutter) + 8px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+#elevator button {
+  width: var(--btn-size);
+  height: var(--btn-size);
+  border-radius: 50%;
+  border: 1px solid var(--stroke);
+  background: var(--panel);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  touch-action: none;
+}
+#elevator button svg {
+  width: 46%;
+  height: 46%;
+  fill: var(--fg);
+}
+#elevator button.pressed {
+  background: rgba(90, 176, 255, 0.35);
+  border-color: var(--accent);
+}

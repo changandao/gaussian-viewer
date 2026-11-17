@@ -1,0 +1,13 @@
+[workspace]
+name = "gaussian_viewer"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
+
+[dependencies]
+nodejs = ">=22,<23"
+
+[tasks]
+install = "npm install"
+dev = { cmd = "npx vite --host", depends-on = ["install"] }
+build = { cmd = "npx vite build", depends-on = ["install"] }
+preview = { cmd = "npx vite preview --host", depends-on = ["build"] }
