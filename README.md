@@ -45,3 +45,27 @@ Load via the **Open** button, drag & drop, or `?url=<file>`.
 
 Toolbar: **Reset** returns to the start view, **Speed** scales movement (0.25×–4×),
 **Flip** rotates the scene 180° about X for OpenCV-convention (Y-down) PLY files.
+
+## Deploy (GitHub Pages, scenes kept out of this repo)
+
+The site itself (viewer code) is public. Scene files live in a **separate private repository**
+and are copied into the Pages build under an unlisted path by `.github/workflows/deploy.yml`.
+
+> Note: anything deployed to GitHub Pages is publicly reachable by URL. The unlisted path only
+> keeps scenes from being discoverable (plus `noindex` / `robots.txt`); it is not access control.
+
+1. **Slim scene pack** (drops photos/depth maps, keeps splats + cameras):
+   ```bash
+   pixi run slim-scene viewfinder-XXXX.zip ../gaussian_viewer_scenes/office.zip
+   ```
+2. **Private scenes repo** `<owner>/gaussian-viewer-scenes`: commit the `*.zip` / `*.spz` files at the repo root.
+3. **Fine-grained PAT**: repository access = only the scenes repo, permission *Contents: Read-only*.
+4. In this repo → *Settings → Secrets and variables → Actions*:
+   - `SCENES_TOKEN` = the PAT
+   - `SCENE_PATH` = a random string, e.g. `openssl rand -hex 12`
+   - (optional variable `SCENES_REPO` if the scenes repo has a different name)
+5. *Settings → Pages → Source*: **GitHub Actions**.
+6. Push to `main` (or run the workflow manually). Share:
+   ```
+   https://<owner>.github.io/gaussian-viewer/?url=s/<SCENE_PATH>/office.zip
+   ```

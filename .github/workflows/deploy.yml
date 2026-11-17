@@ -1,0 +1,79 @@
+name: Deploy to GitHub Pages
+
+# Builds the viewer and publishes it to GitHub Pages.
+#
+# Scenes are NOT stored in this (public) repository. If the secrets below are
+# set, the workflow pulls them from a private repository and places them under
+# an unlisted path: <site>/s/<SCENE_PATH>/...
+#
+#   secrets.SCENES_TOKEN  fine-grained PAT with read-only "Contents" access to the scenes repo
+#   secrets.SCENE_PATH    random string used as the unlisted directory name
+#   vars.SCENES_REPO      optional, defaults to <owner>/gaussian-viewer-scenes
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      HAS_SCENES: ${{ secrets.SCENES_TOKEN != '' && secrets.SCENE_PATH != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build viewer
+        run: |
+          npm ci
+          npm run build
+
+      - name: Fetch private scenes
+        if: env.HAS_SCENES == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.SCENES_REPO || format('{0}/gaussian-viewer-scenes', github.repository_owner) }}
+          token: ${{ secrets.SCENES_TOKEN }}
+          path: _scenes
+          lfs: true
+
+      - name: Add scenes under unlisted path
+        if: env.HAS_SCENES == 'true'
+        env:
+          SCENE_PATH: ${{ secrets.SCENE_PATH }}
+        run: |
+          mkdir -p "dist/s/$SCENE_PATH"
+          find _scenes -maxdepth 1 -type f \( -iname '*.zip' -o -iname '*.spz' -o -iname '*.ply' \
+            -o -iname '*.splat' -o -iname '*.ksplat' -o -iname '*.sog' \) \
+            -exec cp {} "dist/s/$SCENE_PATH/" \;
+          echo "Scenes copied: $(ls "dist/s/$SCENE_PATH" | wc -l)"
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

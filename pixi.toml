@@ -11,3 +11,5 @@ install = "npm install"
 dev = { cmd = "npx vite --host", depends-on = ["install"] }
 build = { cmd = "npx vite build", depends-on = ["install"] }
 preview = { cmd = "npx vite preview --host", depends-on = ["build"] }
+# Usage: pixi run slim-scene <input.zip> <output.zip>
+slim-scene = { cmd = "node scripts/slim-scene.mjs", depends-on = ["install"] }
