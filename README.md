@@ -25,13 +25,54 @@ https://localhost:5173/?url=/viewfinder-2026-11-17-10-03-12.zip
 2. The dev certificate is self-signed: accept the browser warning once.
    HTTPS is required for the gyro (DeviceOrientation API).
 
-## Input formats
+## Loading any Gaussian splat
 
-- `.spz`, `.ply`, `.splat`, `.ksplat`, `.sog`
-- `.zip` containing splats. Viewfinder exports are understood: `export.json` selects the splat,
-  `cameras.json` / `scene.json` provide capture views (dropdown in the toolbar; the first view is the start pose).
+Supported: `.spz`, `.ply`, `.splat`, `.ksplat`, `.sog`, and `.zip` packs containing one of them.
 
-Load via the **Open** button, drag & drop, or `?url=<file>`.
+### 1. Local file (nothing is uploaded)
+
+Open the site (deployed or local), then either
+
+- click **Open** and pick a file (on phones/tablets this opens the Files / Downloads picker), or
+- drag & drop the file onto the page (desktop).
+
+The file is decoded in the browser only. This is the easiest way to look at a private scene
+on any device: send the file to the device (AirDrop, chat, network drive) and open it there.
+
+### 2. By URL: `?url=<file>`
+
+```
+https://changandao.github.io/gaussian-viewer/?url=<file>
+```
+
+- Relative path → file deployed on the same site, e.g. `?url=scenes/garden.spz`.
+- Absolute URL → any host, e.g. `?url=https://example.com/garden.spz`. The host must
+  - serve the **raw file** (a direct download link, not an HTML share page),
+  - use **HTTPS**,
+  - allow cross-origin requests (`Access-Control-Allow-Origin`). `raw.githubusercontent.com`
+    and Hugging Face file URLs do; most cloud-drive share links do not.
+- If the URL itself contains `?` or `&`, URL-encode it (`encodeURIComponent`).
+
+### 3. Local dev server
+
+Put the file in the project root and open `https://localhost:5173/?url=/<file>` after `pixi run dev`.
+
+### Format notes
+
+- **PLY from the original 3DGS / COLMAP pipeline** uses OpenCV axes (Y down) and appears upside down:
+  press **Flip**.
+- **Zip packs**: if `export.json` (`{"splats":[{"url":"path/in/zip.spz"}]}`) is present, the listed
+  splats are loaded; otherwise the first splat file (alphabetical) is used.
+  Optional `cameras.json` adds capture views to the toolbar dropdown (first view = start pose):
+  ```json
+  [{ "imageAsset": { "url": "view-1.png" },
+     "camera": {
+       "intrinsics": { "fy": 646.8, "height": 720 },
+       "extrinsics": { "position": [x, y, z], "quaternion": [qx, qy, qz, qw], "coordinateSystem": "rub" } } }]
+  ```
+  `coordinateSystem` is `rub` (three.js / OpenGL camera) or `rdf` (OpenCV camera).
+  Without cameras the start view frames the scene bounds.
+- Prefer `.spz`: it is ~10× smaller than `.ply` for the same scene.
 
 ## Controls
 
@@ -69,3 +110,32 @@ and are copied into the Pages build under an unlisted path by `.github/workflows
    ```
    https://<owner>.github.io/gaussian-viewer/?url=s/<SCENE_PATH>/office.zip
    ```
+
+Adding / removing private scenes is described in the scenes repo README.
+Pushing to the scenes repo does **not** redeploy the site: run this repo's
+*Deploy to GitHub Pages* workflow manually afterwards (*Actions → Run workflow*).
+
+## Public scenes
+
+For scenes that may be public, skip the private repo. Two options:
+
+**A. Ship with the site** (simplest links). Put the file in `public/scenes/` of this repo.
+Splat/zip files are git-ignored by default, so add them with `-f`:
+
+```bash
+cp garden.spz public/scenes/
+git add -f public/scenes/garden.spz
+git commit -m "Add garden scene" && git push      # push triggers the deploy
+```
+
+Link: `https://changandao.github.io/gaussian-viewer/?url=scenes/garden.spz`
+
+**B. Separate public repo** (keeps this repo small). Commit the file to a public repo, e.g.
+`changandao/gaussian-viewer-public-scenes`, and load it through `raw.githubusercontent.com`
+(CORS-enabled, no redeploy needed):
+
+```
+https://changandao.github.io/gaussian-viewer/?url=https://raw.githubusercontent.com/changandao/gaussian-viewer-public-scenes/main/garden.spz
+```
+
+GitHub rejects files over 100 MB; use `.spz` or a slim zip (`pixi run slim-scene`) to stay below.
