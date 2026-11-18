@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { SparkRenderer, SplatMesh } from "@sparkjsdev/spark";
 import { FlyController } from "./flyController";
+import { FpsMeter } from "./fpsMeter";
 import { GyroLook } from "./gyroLook";
 import { loadFromFile, loadFromUrl, type CameraView, type LoadedScene } from "./loader";
 import { HoldButton, MoveDial } from "./touchControls";
@@ -46,10 +47,12 @@ resize();
 
 const timer = new THREE.Timer();
 timer.connect(document);
+const fpsMeter = new FpsMeter($("fps"));
 renderer.setAnimationLoop((time) => {
   timer.update(time);
   controller.update(timer.getDelta());
   renderer.render(scene, camera);
+  fpsMeter.tick(time);
 });
 
 // ---------- UI ----------
@@ -182,6 +185,7 @@ async function showScene(loaded: LoadedScene) {
   viewSelect.value = "0";
   homeView();
 
+  fpsMeter.setSplatCount(meshes.reduce((n, m) => n + (m.packedSplats?.numSplats ?? 0), 0));
   emptyHint.hidden = true;
   document.title = `${loaded.name} · Gaussian Viewer`;
   clearStatus();

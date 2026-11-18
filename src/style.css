@@ -97,6 +97,46 @@ body {
   accent-color: var(--accent);
 }
 
+/* ---------- FPS meter ---------- */
+#fps {
+  margin-left: auto;
+  padding: 0 12px;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 1px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  --fps-color: #4ade80;
+}
+#fps[data-level="ok"] {
+  --fps-color: #facc15;
+}
+#fps[data-level="bad"] {
+  --fps-color: #f87171;
+}
+.fps-main {
+  font-size: 12px;
+  color: var(--muted);
+}
+.fps-value {
+  font-size: 14px;
+  color: var(--fps-color);
+}
+.fps-detail {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.fps-detail:empty,
+#fps.collapsed .fps-detail {
+  display: none;
+}
+#fps.collapsed .fps-value {
+  color: var(--muted);
+}
+
 /* ---------- status / hints ---------- */
 #status {
   position: fixed;
