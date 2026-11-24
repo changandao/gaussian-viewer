@@ -7,6 +7,8 @@ const KEY_YAW_RATE = THREE.MathUtils.degToRad(90); // rad/s
 const KEY_PITCH_RATE = THREE.MathUtils.degToRad(60); // rad/s
 const ACCEL = 10; // velocity smoothing (1/s)
 const VERTICAL_SPEED_RATIO = 0.5;
+/** Speed multiplier while sprinting (Shift held, or joystick pushed to the rim). */
+export const SPRINT_MULTIPLIER = 3;
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
 
 /**
@@ -110,7 +112,7 @@ export class FlyController {
     if (this.keys.has("KeyD")) mx += 1;
     if (this.keys.has("KeyA")) mx -= 1;
     if (this.up.pressed || this.keys.has("KeyE") || this.keys.has("Space")) my += 1;
-    if (this.down.pressed || this.keys.has("KeyQ") || this.keys.has("ShiftLeft")) my -= 1;
+    if (this.down.pressed || this.keys.has("KeyQ")) my -= 1;
     const horiz = Math.hypot(mx, mz);
     if (horiz > 1) {
       mx /= horiz;
@@ -119,7 +121,7 @@ export class FlyController {
 
     // Heading of the current view projected on the ground plane.
     const heading = this.euler.setFromQuaternion(this.camera.quaternion, "YXZ").y;
-    const speed = this.baseSpeed * this.speedFactor;
+    const speed = this.currentSpeed();
     const sin = Math.sin(heading);
     const cos = Math.cos(heading);
     // forward = (-sin, 0, -cos), right = (cos, 0, -sin)
@@ -141,6 +143,15 @@ export class FlyController {
     }
 
     this.apply();
+  }
+
+  /** Shift (desktop) or joystick on the rim (touch). */
+  get sprinting(): boolean {
+    return this.keys.has("ShiftLeft") || this.keys.has("ShiftRight") || this.dial.sprint;
+  }
+
+  private currentSpeed(): number {
+    return this.baseSpeed * this.speedFactor * (this.sprinting ? SPRINT_MULTIPLIER : 1);
   }
 
   private addLook(dYaw: number, dPitch: number) {
@@ -195,7 +206,7 @@ export class FlyController {
   private onWheel = (e: WheelEvent) => {
     e.preventDefault();
     const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1;
-    this.wheelImpulse += -e.deltaY * unit * 0.002 * this.baseSpeed * this.speedFactor;
+    this.wheelImpulse += -e.deltaY * unit * 0.002 * this.currentSpeed();
   };
 
   private onKeyDown = (e: KeyboardEvent) => {

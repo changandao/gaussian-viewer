@@ -267,6 +267,17 @@ body {
 #dial.moving #dial-knob {
   background: var(--accent);
 }
+#dial.sprint #dial-ring {
+  border-color: #fb923c;
+  box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.35);
+}
+#dial.sprint #dial-knob {
+  background: #fb923c;
+}
+#sprint-badge {
+  color: #fb923c;
+  font-size: 12px;
+}
 
 #elevator {
   right: calc(var(--safe-r) + var(--gutter) + 8px);

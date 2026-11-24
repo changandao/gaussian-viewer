@@ -80,7 +80,8 @@ Put the file in the project root and open `https://localhost:5173/?url=/<file>` 
 |---|---|---|
 | Move forward / back / strafe | Joystick (bottom-left) | Joystick or `W A S D` |
 | Look around | Drag on screen | Mouse drag, arrow keys |
-| Up / down | ▲ / ▼ (bottom-right, hold) | ▲ / ▼, `E` / `Q` |
+| Up / down | ▲ / ▼ (bottom-right, hold) | ▲ / ▼, `E` (or `Space`) / `Q` |
+| Sprint (×3 speed while held) | Push the joystick onto its outer rim and hold | Hold `Shift` |
 | Gyro look | **Gyro** button (tilt the device; dragging still adjusts heading) | – |
 | Dolly | – | Mouse wheel |
 

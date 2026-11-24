@@ -8,10 +8,14 @@
  */
 
 const DEADZONE = 0.08;
+/** Finger distance from the dial center (fraction of dial width) that triggers sprint. */
+const SPRINT_RADIUS = 0.44;
 
 export class MoveDial {
   /** Joystick vector in [-1, 1]; x = right, y = forward. */
   readonly move = { x: 0, y: 0 };
+  /** True while the finger is held on the outer rim (or beyond): sprint. */
+  sprint = false;
 
   private readonly knob: HTMLElement;
   private pointer: number | null = null;
@@ -45,8 +49,9 @@ export class MoveDial {
     this.pointer = null;
     this.move.x = 0;
     this.move.y = 0;
+    this.sprint = false;
     this.knob.style.transform = "";
-    this.root.classList.remove("moving");
+    this.root.classList.remove("moving", "sprint");
   };
 
   private update(e: PointerEvent) {
@@ -67,6 +72,9 @@ export class MoveDial {
     const scale = norm > 0 ? (mag * mag) / norm : 0;
     this.move.x = (kx / maxR) * scale;
     this.move.y = (-ky / maxR) * scale;
+
+    this.sprint = len >= r.width * SPRINT_RADIUS;
+    this.root.classList.toggle("sprint", this.sprint);
   }
 }
 

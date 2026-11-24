@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { SparkRenderer, SplatMesh } from "@sparkjsdev/spark";
-import { FlyController } from "./flyController";
+import { FlyController, SPRINT_MULTIPLIER } from "./flyController";
 import { FpsMeter } from "./fpsMeter";
 import { GyroLook } from "./gyroLook";
 import { loadFromFile, loadFromUrl, type CameraView, type LoadedScene } from "./loader";
@@ -48,9 +48,13 @@ resize();
 const timer = new THREE.Timer();
 timer.connect(document);
 const fpsMeter = new FpsMeter($("fps"));
+const sprintBadge = $("sprint-badge");
+sprintBadge.textContent = `×${SPRINT_MULTIPLIER}`;
 renderer.setAnimationLoop((time) => {
   timer.update(time);
   controller.update(timer.getDelta());
+  const sprinting = controller.sprinting;
+  if (sprintBadge.hidden === sprinting) sprintBadge.hidden = !sprinting;
   renderer.render(scene, camera);
   fpsMeter.tick(time);
 });
